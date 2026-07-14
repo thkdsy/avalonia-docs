@@ -1,0 +1,106 @@
+{
+  "theme.common.editThisPage": {
+    "message": "在 GitHub 上编辑此页",
+    "description": "Edit this page link text"
+  },
+  "theme.common.skipToMainContent": {
+    "message": "跳转到主要内容",
+    "description": "Skip to main content"
+  },
+  "theme.SearchBar.label": {
+    "message": "搜索",
+    "description": "Search bar label"
+  },
+  "theme.SearchBar.seeAll": {
+    "message": "查看全部 {count} 条结果",
+    "description": "See all search results"
+  },
+  "theme.SearchPage.documentsFound.plurals": {
+    "message": "找到 {count} 份文档",
+    "description": "Search results count"
+  },
+  "theme.SearchPage.noResultsText": {
+    "message": "未找到相关文档",
+    "description": "No search results"
+  },
+  "theme.LastUpdated.atDateByAuthor": {
+    "message": "最后更新于 {date}，作者 {author}",
+    "description": "Last updated at date by author"
+  },
+  "theme.NotFound.title": {
+    "message": "页面未找到",
+    "description": "404 page title"
+  },
+  "theme.NotFound.p1": {
+    "message": "你访问的页面不存在。",
+    "description": "404 page description"
+  },
+  "theme.admonition.note": {
+    "message": "备注",
+    "description": "Admonition note title"
+  },
+  "theme.admonition.tip": {
+    "message": "提示",
+    "description": "Admonition tip title"
+  },
+  "theme.admonition.info": {
+    "message": "信息",
+    "description": "Admonition info title"
+  },
+  "theme.admonition.warning": {
+    "message": "警告",
+    "description": "Admonition warning title"
+  },
+  "theme.admonition.danger": {
+    "message": "危险",
+    "description": "Admonition danger title"
+  },
+  "theme.blog.paginator.navAriaLabel": {
+    "message": "博客列表分页导航",
+    "description": "Blog paginator label"
+  },
+  "theme.blog.paginator.newerEntries": {
+    "message": "较新的文章",
+    "description": "Newer blog entries"
+  },
+  "theme.blog.paginator.olderEntries": {
+    "message": "较旧的文章",
+    "description": "Older blog entries"
+  },
+  "theme.docs.paginator.navAriaLabel": {
+    "message": "文档分页导航",
+    "description": "Docs paginator label"
+  },
+  "theme.docs.paginator.previous": {
+    "message": "上一页",
+    "description": "Previous doc page"
+  },
+  "theme.docs.paginator.next": {
+    "message": "下一页",
+    "description": "Next doc page"
+  },
+  "theme.docs.breadcrumbs.navAriaLabel": {
+    "message": "面包屑导航",
+    "description": "Breadcrumbs navigation label"
+  },
+  "theme.CodeBlock.copyButtonAriaLabel": {
+    "message": "复制代码",
+    "description": "Copy code button"
+  },
+  "theme.CodeBlock.copied": {
+    "message": "已复制",
+    "description": "Copied notification"
+  },
+  "theme.CodeBlock.wordWrapToggle": {
+    "message": "切换自动换行",
+    "description": "Word wrap toggle"
+  },
+  "theme.tags.tagsPageLink": {
+    "message": "所有标签",
+    "description": "Tags page link"
+  },
+  "theme.tags.tagsListLabel": {
+    "message": "标签：",
+    "description": "Tags list label"
+  }
+}

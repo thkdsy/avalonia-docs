@@ -1,0 +1,58 @@
+{
+  "title": {
+    "message": "Avalonia 文档",
+    "description": "Navbar title"
+  },
+  "logo.alt": {
+    "message": "Avalonia Logo",
+    "description": "Navbar logo alt text"
+  },
+  "item.label.Guides": {
+    "message": "指南",
+    "description": "Navbar item Guides"
+  },
+  "item.label.Controls": {
+    "message": "控件",
+    "description": "Navbar item Controls"
+  },
+  "item.label.Tools": {
+    "message": "工具",
+    "description": "Navbar item Tools"
+  },
+  "item.label.APIs": {
+    "message": "API",
+    "description": "Navbar item APIs"
+  },
+  "item.label.More": {
+    "message": "更多",
+    "description": "Navbar item More"
+  },
+  "item.label.Troubleshooting": {
+    "message": "故障排查",
+    "description": "Navbar item Troubleshooting"
+  },
+  "item.label.Community Translations": {
+    "message": "社区翻译",
+    "description": "Navbar item Community Translations"
+  },
+  "item.label.Enhanced Support": {
+    "message": "增强支持",
+    "description": "Navbar item Enhanced Support"
+  },
+  "item.label.Professional Services": {
+    "message": "专业服务",
+    "description": "Navbar item Professional Services"
+  },
+  "item.label.GitHub Discussions": {
+    "message": "GitHub 讨论",
+    "description": "Navbar item GitHub Discussions"
+  },
+  "item.label.Blog": {
+    "message": "博客",
+    "description": "Navbar item Blog"
+  },
+  "item.label.Avalonia XPF": {
+    "message": "Avalonia XPF",
+    "description": "Navbar item Avalonia XPF"
+  }
+}
