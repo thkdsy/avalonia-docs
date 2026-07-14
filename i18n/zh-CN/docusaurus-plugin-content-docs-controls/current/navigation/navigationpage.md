@@ -4,14 +4,13 @@ description: '`NavigationPage` 提供基于栈的页面导航。它包含导航�
 doc-type: reference
 ---
 
-import NavigationBasicExample from '/img/controls/navigationpage/navigation-basic-example.gif';
-import NavigationLoginModal from '/img/controls/navigationpage/navigation-login-modal.gif';
+import NavigationPageRootScreenshot from '/img/controls/navigationpage/navigationpage-root.png';
 import NavigationPagePushedScreenshot from '/img/controls/navigationpage/navigationpage-pushed.png';
-import NavigationPageCustomBackScreenshot from '/img/controls/navigationpage/navigationpage-custom-back-button.png';
+import NavigationPageCustomBackButtonScreenshot from '/img/controls/navigationpage/navigationpage-custom-back-button.png';
 import NavigationPageNoNavbarScreenshot from '/img/controls/navigationpage/navigationpage-no-navbar.png';
-import NavigationPageNoBackButtonScreenshot from '/img/controls/navigationpage/navigationpage-no-back-button.png';
 import NavigationPageOverlayBarScreenshot from '/img/controls/navigationpage/navigationpage-overlay-bar.png';
 import NavigationPageTopCommandBarScreenshot from '/img/controls/navigationpage/navigationpage-top-commandbar.png';
+import NavigationPageAppearanceScreenshot from '/img/controls/navigationpage/navigationpage-appearance.png';
 import NavigationPageModalScreenshot from '/img/controls/navigationpage/navigationpage-modal.png';
 import NavigationPageDrawerIntegrationScreenshot from '/img/controls/navigationpage/navigationpage-drawer-integration.png';
 
@@ -115,7 +114,7 @@ import NavigationPageDrawerIntegrationScreenshot from '/img/controls/navigationp
 
 ### 基础 NavigationPage
 
-<Image light={NavigationBasicExample} alt="Animation showing a home page with a navigation bar; clicking 'Go to Details' slides to a detail page with Refresh and Share command buttons in the navigation bar" position="center" maxWidth={400} cornerRadius="true" />
+<Image light={NavigationPageRootScreenshot} alt="Animation showing a home page with a navigation bar; clicking 'Go to Details' slides to a detail page with Refresh and Share command buttons in the navigation bar" position="center" maxWidth={400} cornerRadius="true" />
 <br />
 
 这是一个基础版 `NavigationPage` 实现：在首页和详情页之间进行双页导航，并在详情页中额外显示顶部命令栏。
@@ -261,9 +260,6 @@ private void UpdateStatus()
 
 ### 隐藏返回按钮
 
-<Image light={NavigationPageNoBackButtonScreenshot} alt="A navigation bar showing the 'Details' page title without a back button" position="center" maxWidth={400} cornerRadius="true"/>
-<br />
-
 <Tabs>
 
   <TabItem label="XAML" value="xaml">
@@ -288,7 +284,7 @@ private void UpdateStatus()
 
 在这个示例中，通过在 `DetailPage.axaml.cs` 的代码后置中添加下面这行代码，把详情页中的返回箭头替换为文本 “Go Home”。
 
-<Image light={NavigationPageCustomBackScreenshot} alt="A navigation bar showing 'Go Home' as a custom back button label next to the Details page title" position="center" maxWidth={400} cornerRadius="true"/>
+<Image light={NavigationPageCustomBackButtonScreenshot} alt="A navigation bar showing 'Go Home' as a custom back button label next to the Details page title" position="center" maxWidth={400} cornerRadius="true"/>
 <br />
 
 ```csharp
@@ -394,7 +390,7 @@ public partial class MainWindow : Window
 
 这个示例展示了一个模拟登录页。它由首页通过 `PushModalAsync` 调起。点击 Login 会通过 `PopModalAsync` 关闭当前模态页，而点击 Cancel 则会通过 `PopAllModalsAsync` 关闭所有已打开的模态页。
 
-<Image light={NavigationLoginModal} alt="Animation showing a modal login page with email and password fields being presented over the home page and dismissed" position="center" maxWidth={400} cornerRadius="true" />
+<Image light={NavigationPageModalScreenshot} alt="Animation showing a modal login page with email and password fields being presented over the home page and dismissed" position="center" maxWidth={400} cornerRadius="true" />
 <br />
 
 <Tabs>
