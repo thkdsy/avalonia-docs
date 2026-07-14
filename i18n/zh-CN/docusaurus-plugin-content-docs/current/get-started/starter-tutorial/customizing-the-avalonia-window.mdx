@@ -1,0 +1,93 @@
+---
+id: customizing-the-avalonia-window
+title: 自定义 Avalonia 窗口
+description: 了解如何调整 Avalonia 窗口的属性。本文是 Avalonia 入门教程 7 篇中的第 4 篇。
+doc-type: tutorial
+---
+
+import TemperatureConverterPortraitOrientation from '/img/get-started/temperature-converter-portrait-orientation.png';
+import BoxModelDiagram from '@site/src/components/global/BoxModelDiagram';
+
+正如[前面提到的](/docs/get-started/starter-tutorial)，Avalonia 窗口就是你的应用在目标平台上运行的容器。在 `.axaml` 文件中，`<Window>...</Window>` 标签定义了窗口中的内容。
+
+## 布局区域
+
+Avalonia 窗口有四个布局区域：（1）Margin、（2）Border、（3）Padding，以及（4）Content。
+
+一些布局控件，例如你之前使用过的 `StackPanel`，也会创建带有同样四个布局区域的较小子区域。
+
+:::note
+每个 Avalonia 窗口在它的内容区域中只接受一个控件。
+:::
+
+<BoxModelDiagram />
+
+## 默认窗口属性
+
+和控件一样，Avalonia 中的窗口也使用 XML 属性来定义它们的外观和行为。
+
+滚动到 **MainWindow.axaml** 文件顶部，查看 `<Window>` 的开始标签。你会发现它已经包含了一些默认设置。
+
+```xml
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GetStartedApp.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="GetStartedApp.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="GetStartedApp">
+```
+
+:::note
+`<Window>` 标签开头的前几行声明了 Avalonia 使用的 XML 命名空间。这里使用到的命名空间别名包括 `x`、`vm`、`d` 和 `mc`。
+:::
+
+## 设置窗口属性
+
+接下来我们试着调整窗口尺寸，让它看起来更像竖屏而不是横屏。这在开发应用时很常见，因为你可能想查看它在移动设备上的显示效果。
+
+### 设置预览器尺寸
+
+调整 `d:DesignWidth` 和 `d:DesignHeight` 的值，可以改变应用在实时预览器中的显示尺寸，而不会影响应用运行时窗口的实际尺寸。
+
+1. 在 **MainWindow.axaml** 文件中，在 `<Window>...</Window>` 标签内找到这一行：
+
+```xml
+mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+```
+
+2. 将 `d:DesignWidth` 改为 400。
+3. 观察预览器。你应该会看到预览效果现在更像一个移动设备屏幕。
+
+更多信息请参阅[预览你的 UI 设计](/docs/app-development/xaml-preview-and-design-settings)页面。
+
+<Image light={TemperatureConverterPortraitOrientation} alt="应用以竖屏窗口运行时的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+
+### 设置运行时窗口大小
+
+如果要调整应用运行时窗口的尺寸，就需要在 `<Window>` 开始标签上添加 `Width` 和 `Height` 属性。
+
+1. 在 **MainWindow.axaml** 文件中，找到 `<Window>` 开始标签的最后一行：
+
+```xml
+Title="GetStartedApp">
+```
+
+2. 在这一行下面添加 `Width="400"` 和 `Height="450"` 属性，并记得把尖括号移动到最后。
+
+```xml
+Title="GetStartedApp"
+Width="400"
+Height="450">
+```
+
+3. 运行应用。你应该会看到窗口现在看起来更像一个移动设备界面。
+
+:::note
+实际上，大多数移动平台都会忽略窗口大小，并自动把窗口调整到适合屏幕的尺寸。在开发时，你通常不需要真的为每个目标平台单独设置一个窗口尺寸。
+:::
+
+在本教程的下一页中，你将学习如何创建事件处理逻辑，让按钮能够响应点击。

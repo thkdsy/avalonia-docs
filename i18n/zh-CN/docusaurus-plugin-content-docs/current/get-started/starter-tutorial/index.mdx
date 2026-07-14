@@ -1,0 +1,60 @@
+---
+id: index
+title: 入门教程
+description: 通过构建一个温度转换器应用来学习 Avalonia 基础知识。本文是 Avalonia 入门教程 7 篇中的第 1 篇。
+doc-type: tutorial
+---
+
+import DocsCard from '@site/src/components/global/DocsCard';
+import DocsCards from '@site/src/components/global/DocsCards';
+import TemperatureConverterComplete from '/img/get-started/temperature-converter-complete.png';
+import MainWindowFileLocation from '/img/get-started/mainwindow-file-location.png';
+
+## 构建一个温度转换器应用
+
+现在你已经完成了[安装 Avalonia](/docs/get-started/install-avalonia)、[配置 IDE](/docs/get-started/set-up-your-ide)以及[创建第一个项目](/docs/get-started/create-your-first-project)，接下来就可以开始了解 Avalonia 中一些基础概念和功能了。我们会把默认的 Avalonia 模板一步步改造成一个温度转换器应用。
+
+按照本教程动手构建这个应用的过程中，你将学习到：
+
+<DocsCards>
+  <DocsCard header="添加控件" href="/docs/get-started/starter-tutorial/adding-a-control">
+    <p>向应用中添加一个按钮，并把它放到窗口中的合适位置。</p>
+  </DocsCard>
+  <DocsCard header="添加布局" href="/docs/get-started/starter-tutorial/adding-some-layout">
+    <p>使用布局控件在界面上排列多个控件。</p>
+  </DocsCard>
+  <DocsCard header="自定义 Avalonia 窗口" href="/docs/get-started/starter-tutorial/customizing-the-avalonia-window">
+    <p>调整窗口大小、标题及其他属性。</p>
+  </DocsCard>
+  <DocsCard header="建立事件与响应" href="/docs/get-started/starter-tutorial/establishing-events-and-responses">
+    <p>创建一个事件处理器来响应按钮点击。</p>
+  </DocsCard>
+  <DocsCard header="转换数据" href="/docs/get-started/starter-tutorial/converting-data">
+    <p>在按钮点击时，使用代码后置完成温度数值转换。</p>
+  </DocsCard>
+  <DocsCard header="练习题" href="/docs/get-started/starter-tutorial/exercises">
+    <p>通过三个编程练习检验你对 Avalonia 的理解。</p>
+  </DocsCard>
+</DocsCards>
+
+<Image light={TemperatureConverterComplete} alt="完成后的应用截图：可将摄氏温度转换为华氏温度。" position="center" maxWidth={400} cornerRadius="true" margin={10}/>
+
+## .axaml
+
+注意到你项目目录中那些以 `.axaml` 结尾的文件了吗？它是 Avalonia XAML 的缩写，是 Avalonia 特有的文件扩展名，用来区别于普通 XAML 文件。
+
+## 检查 XAML 实时预览器是否可用
+
+如果你刚刚在 Visual Studio 或 JetBrains Rider 中安装了 Avalonia，并且你对 IDE 开发也还比较陌生，那么现在正是检查 XAML 实时预览器是否能正常使用的好时机。
+
+关于如何启用预览器，请参阅 [XAML 实时预览](/docs/app-development/xaml-preview-and-design-settings) 页面。
+
+## 打开主窗口文件
+
+在项目目录的 **Views** 文件夹中，打开 **MainWindow.axaml** 文件。在本教程中，你主要会在这个文件中进行操作。
+
+<Image light={MainWindowFileLocation} alt="展示主窗口文件在文件树中位置的截图。" position="center" maxWidth={400} cornerRadius="true" margin="20,0,50,0"/>
+
+**MainWindow.axaml** 中几乎所有内容都写在 `<Window>...</Window>` 这个 XAML 标签之间。这个标签表示 Avalonia 窗口，也就是你的应用在目标平台上运行的容器。稍后在[自定义 Avalonia 窗口](/docs/get-started/starter-tutorial/customizing-the-avalonia-window)一节中，我们会更详细地讲解它。
+
+继续阅读本教程的下一页，学习如何向应用中添加一个按钮。

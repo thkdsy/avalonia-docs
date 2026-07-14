@@ -1,0 +1,79 @@
+---
+id: adding-a-control
+title: 添加控件
+description: 了解如何为你的温度转换器应用添加一个按钮。本文是 Avalonia 入门教程 7 篇中的第 2 篇。
+doc-type: tutorial
+---
+
+import CalculateButtonLeft from '/img/get-started/calculate-button-left.png';
+import CalculateButtonCenter from '/img/get-started/calculate-button-center.png';
+
+温度转换器应用的第一步，是先添加一个**控件**。在 Avalonia 中，控件指的是用户可以看到或与之交互的任何 UI 元素。按钮、滑块、复选框、文本框和菜单都属于控件。每个控件都会在 AXAML 标记中表示为一个 XML 元素，因此你可以很方便地添加、删除或重新排列用户界面的元素。
+
+如果想查看完整的内置控件列表，请参阅[控件参考页](/controls)。
+
+## 插入一个按钮
+
+首先，把应用中的默认文本替换为一个 [`Button`](/api/avalonia/controls/button) 控件。
+
+1. 如果应用仍在运行，请先停止它。
+2. 在 **MainWindow.axaml** 文件中，找到下面这一行：
+
+```xml
+<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+```
+
+3. 用下面这个 `Button` 元素替换整行内容：
+
+```xml
+<Button>Calculate</Button>
+```
+
+`<Button>` 开始标签与结束标签之间的文本，会成为按钮上显示的可见标签。在这里，按钮显示的是 “Calculate”。
+
+4. 运行应用，或者查看预览器。此时你应该能在应用窗口中看到一个 **Calculate** 按钮。
+5. 试着把鼠标悬停在按钮上，或者点击它，观察外观如何变化。Avalonia 的默认主题已经内置了悬停、按下和聚焦等视觉状态，因此按钮无需额外代码就能响应用户交互。
+
+<Image light={CalculateButtonLeft} alt="应用运行时的截图：按钮在窗口中左对齐显示。" position="center" maxWidth={400} cornerRadius="true"/>
+
+## 设置按钮属性
+
+Avalonia 中的控件使用 XML 属性来配置它们的外观和行为。你可以把这些属性理解为直接写在 AXAML 标记中的设置项，用来控制尺寸、位置、颜色等内容。
+
+当前你的 **Calculate** 按钮是贴着窗口左边缘对齐的。这是因为 [`HorizontalAlignment`](/api/avalonia/layout/horizontalalignment) 属性的默认值是 `Left`。如果想把按钮居中，就需要显式设置这个属性。
+
+1. 在 **MainWindow.axaml** 中，找到你刚刚添加的按钮这一行：
+
+```xml
+<Button>Calculate</Button>
+```
+
+2. 为 `<Button>` 标签添加 `HorizontalAlignment` 属性，并将其设置为 `Center`：
+
+```xml
+<Button HorizontalAlignment="Center">Calculate</Button>
+```
+
+3. 运行应用，或者查看预览器。你应该会看到 **Calculate** 按钮移动到了窗口中央。
+
+<Image light={CalculateButtonCenter} alt="应用运行时的截图：按钮在窗口中居中显示。" maxWidth={400} cornerRadius="true" margin="0,0,30,0"/>
+
+:::tip
+你也可以设置 `VerticalAlignment` 来控制控件在垂直方向上的位置。试着给按钮加上 `VerticalAlignment="Center"` 看看效果。
+:::
+
+## 你已经学会了什么
+
+In this section, you:
+
+- 通过编写 AXAML 标记，向窗口中添加了一个 `Button` 控件。
+- 在开始标签与结束标签之间设置了按钮内容（即按钮标签文本）。
+- 使用 `HorizontalAlignment` 属性改变了按钮的位置。
+
+在下一页中，你将学习如何使用布局控件向应用中添加多个元素。
+
+## 另请参阅
+
+- [Button 参考](/controls/input/buttons/button)
+- [控件概览](/controls)
+- [添加布局](/docs/get-started/starter-tutorial/adding-some-layout)（本教程的下一步）

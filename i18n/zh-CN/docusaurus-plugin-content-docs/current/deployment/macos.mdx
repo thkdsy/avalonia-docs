@@ -1,0 +1,554 @@
+---
+id: macos
+title: macOS
+---
+
+import FileTree from '@site/src/components/global/FileTree';
+
+macOS 应用通常以 `.app` bundle 的形式分发。虽然它带有 `.app` 扩展名，但 bundle 实际上是一个具备固定结构的目录，macOS 会把它视为一个可启动的独立应用。它包含编译后的可执行文件、图标与图像等资源，以及用于告诉 macOS 如何运行和展示应用的元数据。要让 .NET 和 Avalonia 项目能够正确在 `.app` bundle 中工作，发布后还需要做一些额外处理。
+
+:::tip[Use Parcel for easier packaging]
+[Parcel](/tools/parcel/packaging-for-macos) 可以自动完成 Avalonia 应用的 macOS 打包。它支持通过一条命令处理 bundle 结构、`Info.plist` 生成、代码签名、公证以及 DMG 创建。Parcel 还可以在 Windows 和 Linux 上生成 macOS bundle。如果你希望避免手动执行下面这些步骤，可以先查看 [Parcel 配置指南](/tools/parcel/setup)。
+:::
+
+## 手动打包
+
+本页其余部分将介绍如何手动创建、签名、公证并分发一个 `.app` bundle。
+
+Avalonia 的 `.app` bundle 结构如下：
+
+<FileTree data={[
+  {
+    name: 'MyProgram.app',
+    type: 'folder',
+    children: [
+      {
+        name: 'Contents',
+        type: 'folder',
+        children: [
+          {
+            name: '_CodeSignature',
+            type: 'folder',
+            comment: '存放代码签名信息',
+            children: [
+              { name: 'CodeResources', type: 'file' }
+            ]
+          },
+          {
+            name: 'MacOS',
+            type: 'folder',
+            comment: '所有 DLL 等文件——即 dotnet publish 的输出内容',
+            children: [
+              { name: 'MyProgram', type: 'file' },
+              { name: 'MyProgram.dll', type: 'file' },
+              { name: 'Avalonia.dll', type: 'file' }
+            ]
+          },
+          {
+            name: 'Resources',
+            type: 'folder',
+            children: [
+              { name: 'MyProgramIcon.icns', type: 'file', comment: '图标文件' }
+            ]
+          },
+          { name: 'Info.plist', type: 'file', comment: '存放 bundle 标识符、版本等信息' },
+          { name: 'embedded.provisionprofile', type: 'file', comment: '包含签名信息的文件' }
+        ]
+      }
+    ]
+  }
+]} />
+
+`Info.plist` 是一个 XML property list 文件，相当于 bundle 的清单文件。它声明了应用的标识、版本、图标、可执行文件名以及其他会在启动时被 macOS 读取的元数据。每个 `.app` bundle 都必须包含它。
+
+### 创建应用 bundle
+
+有多种方式可以创建 `.app` 的文件/目录结构。由于 `.app` 本质上只是按特定格式组织起来的一组文件夹，因此你可以在任何操作系统上完成这件事，相关工具也不局限于某个系统。不过，如果你是在 Windows 上且没有通过 WSL 构建，那么生成的可执行文件可能不具备在 macOS 上运行所需的正确属性——你可能需要在一台 Unix 机器上，对发布后的二进制输出（即 `dotnet publish` 的输出）执行 `chmod +x`。这个二进制文件最终会位于 `MyApp.app/Contents/MacOS/` 目录中，并且它的文件名应与 `CFBundleExecutable` 一致。
+
+`.app` 结构依赖一个格式正确且信息完整的 `Info.plist` 文件。建议使用 Xcode 编辑 `Info.plist`，因为它会为所有属性提供自动补全。以下这些键是必须的：
+
+| 键 | 说明 | 示例 |
+|---|---|---|
+| `CFBundleExecutable` | 必须与 `dotnet publish` 生成的二进制文件名一致（即程序集名去掉 `.dll`）。 | `MyApp` |
+| `CFBundleName` | 应用显示名称（最多 15 个字符）。 | `My App` |
+| `CFBundleDisplayName` | 完整显示名称。只有在 `CFBundleName` 超过 15 个字符时才需要。 | `My Application` |
+| `CFBundleIconFile` | `.icns` 图标文件名，包含扩展名。 | `MyApp.icns` |
+| `CFBundleIdentifier` | 使用反向 DNS 格式的唯一标识符。 | `com.myapp.macos` |
+| `NSHighResolutionCapable` | 启用 Retina 显示支持。应设为 `<true/>`。 | `true` |
+| `CFBundleVersion` | 内部构建版本号。 | `1.4.2` |
+| `CFBundleShortVersionString` | 面向用户显示的版本号。 | `1.4.2` |
+
+如果你需要注册自定义 URL scheme 或文件类型关联，请参阅 [macOS 平台集成指南](/docs/platform-specific-guides/macos)。
+
+如需查看 `Info.plist` 键的完整列表，请参阅 Apple 的 [Information Property List](https://developer.apple.com/documentation/bundleresources/information_property_list/bundle_configuration) 参考文档。
+
+如果某一步工具报错，提示你的 assets 文件没有 `osx-64` 目标，请在 `.csproj` 顶部的 `<PropertyGroup>` 中添加以下 [runtime identifiers](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)：
+
+```xml
+<RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
+```
+
+如果需要，也可以继续添加其他 runtime identifier，彼此之间使用分号 `;` 分隔。
+
+#### 创建图标文件
+
+这种图标文件不仅可以在 Apple 设备上创建，也可以在 Linux 设备上生成。  
+更多信息可参考这篇博文：  
+[Creating macOS Icons (icns) on Linux](https://dentrassi.de/2014/02/25/creating-mac-os-x-icons-icns-on-linux/)
+
+#### 关于 `.app` 的可执行文件
+
+macOS 在启动 `.app` bundle 时，实际执行的文件**不会**带有标准的 `.dll` 扩展名。如果你放入 `.app` bundle 中的 publish 输出内容里，既没有 `MyApp`（可执行文件），也没有 `MyApp.dll`，那通常说明生成过程出了问题，macOS 很可能无法正确启动你的 `.app`。
+
+[.NET Core 在 macOS 上的分发与公证方式近期发生了一些变化](https://docs.microsoft.com/en-us/dotnet/core/install/macos-notarization-issues)，这可能导致 `MyApp` 可执行文件（在链接文档中也称为 “app host”）没有被生成。**要让你的 `.app` 正常工作，这个文件必须存在。** 为确保它会被生成，请采用以下任一方式：
+
+* Add the following to your `.csproj` file:
+
+```xml
+<PropertyGroup>
+  <UseAppHost>true</UseAppHost>
+</PropertyGroup>
+```
+
+* Add `-p:UseAppHost=true` to your `dotnet publish` command.
+
+另外，你也可以在 dotnet 命令中添加 `-p:PublishSingleFile=true`，把大部分 DLL 编译进单个应用文件中，这样能简化签名和公证流程。
+
+### 手动方式
+
+首先，发布你的应用（参见 [dotnet publish 文档](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish)）：
+
+```bash
+dotnet publish -r osx-x64 --configuration Release -p:UseAppHost=true
+```
+
+创建你的 `Info.plist` 文件，并根据需要增删或修改键值：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIconFile</key>
+    <string>myicon-logo.icns</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.identifier</string>
+    <key>CFBundleName</key>
+    <string>MyApp</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.12</string>
+    <key>CFBundleExecutable</key>
+    <string>MyApp.Avalonia</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+</dict>
+</plist>
+```
+
+随后，你就可以按照本页顶部描述的结构创建 `.app` 目录。如果你想用脚本自动完成，可以使用类似下面这样的写法（macOS/Unix）：
+
+```bash
+#!/bin/bash
+APP_NAME="/path/to/your/output/MyApp.app"
+PUBLISH_OUTPUT_DIRECTORY="/path/to/your/publish/output/netcoreapp3.1/osx-64/publish/."
+# PUBLISH_OUTPUT_DIRECTORY 应指向 dotnet publish 命令的输出目录。
+# 例如：/path/to/your/csproj/bin/Release/netcoreapp3.1/osx-x64/publish/。
+# 如果你想修改输出目录，可在 dotnet publish 命令中添加 `--output /my/directory/path`。
+INFO_PLIST="/path/to/your/Info.plist"
+ICON_FILE="/path/to/your/myapp-logo.icns"
+
+if [ -d "$APP_NAME" ]
+then
+    rm -rf "$APP_NAME"
+fi
+
+mkdir "$APP_NAME"
+
+mkdir "$APP_NAME/Contents"
+mkdir "$APP_NAME/Contents/MacOS"
+mkdir "$APP_NAME/Contents/Resources"
+
+cp "$INFO_PLIST" "$APP_NAME/Contents/Info.plist"
+cp "$ICON_FILE" "$APP_NAME/Contents/Resources/$ICON_FILE"
+cp -a "$PUBLISH_OUTPUT_DIRECTORY" "$APP_NAME/Contents/MacOS"
+```
+
+如果你是在 Windows 上创建 `.app`，请务必在一台 Unix 机器上执行 `chmod +x MyApp.app/Contents/MacOS/AppName`。否则该应用将无法在 macOS 上启动。
+
+### 为应用签名
+
+当你已经创建好 `.app` 文件后，通常还需要为应用进行签名，这样它才能顺利完成公证，并在分发给用户时避免被 Gatekeeper 阻拦。从 macOS 10.15 \(Catalina\) 开始，所有在 App Store 之外分发的应用都必须经过公证；而要让公证成功，你需要启用 hardened runtime，并对 `.app` 运行 `codesign`。
+
+Hardened runtime 是 macOS 的一项安全策略，用来限制应用在运行时可以执行的行为。它会阻止代码注入、未签名库加载，以及在未显式声明权限时访问某些系统资源。Apple 要求所有需要公证的应用都必须启用 hardened runtime。
+
+遗憾的是，这一步必须使用 Mac 电脑，因为我们需要运行 Xcode 自带的 `codesign` 命令行工具。
+
+### 运行 codesign 并启用 hardened runtime
+
+启用 hardened runtime 会和代码签名在同一步中完成。你需要对 `.app` bundle 中 `Contents/MacOS` 目录下的所有内容执行 codesign。由于文件通常很多，最方便的方式是使用脚本来处理。要完成签名，你需要一个 Apple 开发者账号；而如果还要对应用进行公证，则必须使用 Developer ID 证书，这需要付费的 Apple 开发者订阅。
+
+此外，你还需要安装 Xcode 命令行工具。你可以通过安装并启动 Xcode 来完成，或者在命令行中执行 `xcode-select --install`，然后按照提示安装这些工具。
+
+首先，创建一个 `MyAppEntitlements.entitlements` 文件，以带有部分[例外权限](https://developer.apple.com/documentation/security/hardened_runtime?language=objc)的方式启用 Hardened Runtime：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
+</dict>
+</plist>
+```
+
+然后运行以下脚本，让它帮你完成所有代码签名：
+
+```bash
+#!/bin/bash
+APP_NAME="/path/to/your/output/MyApp.app"
+ENTITLEMENTS="/path/to/your/MyAppEntitlements.entitlements"
+SIGNING_IDENTITY="Developer ID: MyCompanyName" # matches Keychain Access certificate name
+
+find "$APP_NAME/Contents/MacOS/"|while read fname; do
+    if [[ -f $fname ]]; then
+        echo "[INFO] Signing $fname"
+        codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS" --sign "$SIGNING_IDENTITY" "$fname"
+    fi
+done
+
+echo "[INFO] Signing app file"
+
+codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS" --sign "$SIGNING_IDENTITY" "$APP_NAME"
+```
+
+`codesign` 命令中的 `--options=runtime` 部分，就是为应用启用 hardened runtime 的关键。由于 [.NET Core 与 hardened runtime 可能并非完全兼容](https://github.com/dotnet/runtime/issues/10562#issuecomment-503013071)，我们需要添加一些例外权限，以允许使用 JIT 编译代码以及发送 Apple Events。JIT 例外是 Avalonia 应用在 hardened runtime 下运行所必需的；而 Apple Events 的例外则用于修复 Console.app 中可能出现的一类报错。
+
+注意：微软列出了 [一些其他 hardened runtime 例外权限](https://docs.microsoft.com/en-us/dotnet/core/install/macos-notarization-issues#default-entitlements) 作为 .NET Core 的需求。但对于运行 Avalonia 应用来说，真正必需的只有 `com.apple.security.cs.allow-jit`。其他权限可能会给你的应用带来额外安全风险，请谨慎使用。
+
+应用完成签名后，你可以运行下面这条命令来验证签名是否正确。只要它没有输出错误，就说明签名正常：
+
+```bash
+codesign --verify --verbose /path/to/MyApp.app
+```
+
+### 为软件做公证
+
+公证（Notarization）是一种自动化流程：你把签名后的应用上传到 Apple 服务器进行安全扫描。审核通过后，Apple 会为你的软件签发一张票据，用来证明它已经通过恶意内容检查。当用户下载应用时，macOS 会验证这张票据，并允许应用启动，而不会显示“未识别的开发者”警告。从 macOS 10.15（Catalina）开始，所有在 Mac App Store 之外分发的应用都必须经过公证。
+
+1. Make sure your `.app` is code signed properly
+2. Stick your `.app` in a `.zip` file, e.g. `MyApp.zip`. Note that using `zip` will make notarization fail, instead use `ditto` like so: `ditto -c -k --sequesterRsrc --keepParent MyApp.app MyApp.zip`
+3. Run `xcrun altool --notarize-app -f MyApp.zip --primary-bundle-id com.unique-identifier-for-this-upload -u username -p password`. You can use a password in your keychain by passing `-p "@keychain:AC_PASSWORD"`, where AC\_PASSWORD is the key. The account has to be registered as an Apple Developer.
+4. If the upload is successful, you'll get a UUID back for your request token like this: `28fad4c5-68b3-4dbf-a0d4-fbde8e6a078f`
+5. You can check notarization status using that token like this: `xcrun altool --notarization-info 28fad4c5-68b3-4dbf-a0d4-fbde8e6a078f -u username -p password`. This could take some time -- eventually it will succeed or fail.
+6. If it succeeds, you have to staple the notarization to the app: `xcrun stapler staple MyApp.app`. You can validate this by running `xcrun stapler validate MyApp.app`.
+
+完成公证后，你的应用就可以正常对外分发了！
+
+:::info
+如果你是通过 `.dmg` 分发应用，那么步骤需要稍作调整：
+:::
+
+1. Notarize your `.app` as normal \(in a `.zip` file\)
+2. Add your notarized and stapled \(`xcrun stapler`\) app into the DMG \(the DMG now has the notarized/stapled `.app` file inside of it\).
+3. Notarize your `.dmg` file \(same basic `xcrun altool` command, just with the `.dmg` file for the `-f` flag instead of the `.zip`\)
+4. Staple the notarization to the `.dmg` file: `xcrun stapler staple MyApp.dmg`
+
+### App Store 打包
+
+你需要准备很多内容：
+
+* 你的应用符合 [App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)。
+* 你的应用符合 [macOS Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/macos/overview/themes/)。
+* 已关联 Apple ID 的 Apple Developer 账号。
+* 你的应用已在 [App Store Connect](https://appstoreconnect.apple.com/apps/) 中注册。
+* 已从 App Store 安装 Transporter 应用。
+* 已安装最新版 Xcode，并且其中已登录你的 Apple ID。
+* 两个证书：用于签署 `.pkg` 文件的 `3rd Party Mac Developer Installer`，以及用于签署 bundle 的 `3rd Party Mac Developer Application`。
+* App Store Provision Profile —— 可从 [Apple Developer provisioning profiles 页面](https://developer.apple.com/account/resources/profiles/list) 获取。
+* 两份 entitlements：一份用于签署 `.app`，另一份用于签署辅助程序。
+* 你的应用内容已被[正确打包进 bundle](https://developer.apple.com/documentation/bundleresources/placing_content_in_a_bundle)。
+* 你的 bundle 已被正确签名。
+* 你的 `.dylib` 文件中不包含 ARM/x64 之外的其他架构。可使用 `lipo` 命令行工具移除它们。
+* 你的应用已准备好在 macOS sandbox 中运行（见下方 Sandbox 章节）。
+
+### 获取证书
+
+* 打开 Xcode &gt; Preferences &gt; Account &gt; Manage Certificates... 
+* 如果证书不存在，就先添加它们。
+* 使用密码将它们导出。 
+* 打开这些证书文件，并导入到 KeyChain Access 中。
+* 在 KeyChain 中，你应该能看到 `3rd Party Mac Developer Installer` 和 `Apple Distribution` 这两个证书。如果证书名称是以其他字符串开头，说明你创建了错误的证书，请重新操作。
+* 展开已导入的密钥，并双击其中的私钥。
+* 切换到 Access Control 标签页。
+* 如果你不希望每次签署文件时都输入 Mac 账户密码，可以选择 `Allow all applications to access this item`。
+
+### Sandbox 与 bundle
+
+App Store 要求应用必须在 sandbox 中运行。Sandbox 是一种安全机制，它会把你的应用与系统其他部分隔离开来。除非你通过 entitlements 显式申请权限，否则它会限制应用对文件系统、网络、硬件以及其他应用的访问。这是为了保护用户免受恶意软件或存在缺陷的软件影响。
+
+你的应用必须为这种受限环境做好准备，并且在某个文件夹或资源不可访问时也不能直接崩溃。
+
+.NET 6 应用只有在启用 single file 发布选项时，才能避免在 sandbox 中崩溃。例如：
+
+`dotnet publish src/MyApp.csproj -c Release -f net6.0 -r osx-x64 --self-contained true -p:PublishSingleFile=true`
+
+你的应用内容也必须被正确地组织进 bundle。macOS 期望特定类型的文件位于 bundle 中的特定目录。
+
+文章中最重要的规则包括： 
+* Apple 不把 `.dll` 文件视为可执行代码，因此它们应放在 `/Resources` 文件夹中，并且可以不签名。
+* `/MacOS` 目录中应只包含可执行的 mach-o 文件——也就是你的应用主可执行文件以及其他辅助可执行文件。
+* 其他所有 mach-o 类型的 `.dylib` 文件都应放在 `Frameworks/` 文件夹中。
+
+为了较轻松地满足这个要求，你可以从 `MacOS/` 文件夹创建指向 `Resources/` 与 `Frameworks/` 文件夹的相对符号链接。例如：
+
+`ln -s fromFile toFile`
+
+此外，最好把应用对资源的访问方式改为直接访问 `Resources/` 文件夹，而不是通过符号链接，因为在 sandbox 中，经由符号链接访问时可能会遇到 I/O 权限问题。
+
+### Sandbox entitlements 与签名
+
+Entitlements 是一组键值对，用于声明应用所需的特定能力，例如网络访问、文件系统访问或 JIT 编译。你需要把它们写在 entitlements `.plist` 文件中，而 macOS 会在运行时强制执行这些限制。请只声明你的应用真正需要的 entitlements。
+
+第一份 entitlements 文件用于签署 `.app/Content/MacOS/` 文件夹中的所有辅助可执行文件，内容大致如下：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.inherit</key>
+    <true/>
+</dict>
+</plist>
+```
+
+第二份 entitlements 文件用于签署应用主可执行文件以及整个 app bundle，它应包含应用所需的全部权限。示例如下：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+    <true/>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
+    <array>
+        <string>com.apple.coreservices.launchservicesd</string>
+    </array>
+</dict>
+</plist>
+```
+
+以下是一些你的应用可能需要的可选权限：
+
+```xml
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <key>com.apple.security.files.bookmarks.document-scope</key>
+    <true/>
+    <key>com.apple.security.application-groups</key>
+    <array>
+      <string>[Your Team ID].[Your App ID]</string>
+    </array>
+```
+
+### 打包脚本
+
+下面是一个带注释的打包脚本示例
+
+```bash
+# 清理目录
+rm -rf "App/AppName.app/Contents/MacOS/" 
+rm -rf "App/AppName.app/Contents/CodeResources" 
+rm -rf "App/AppName.app/Contents/_CodeSignature" 
+rm -rf "App/AppName.app/Contents/embedded.provisionprofile" 
+mkdir -p "App/AppName.app/Contents/Frameworks/"
+mkdir -p "App/AppName.app/Contents/MacOS/"
+
+# 构建应用
+dotnet publish ../../ProjectFolder/AppName.csproj -c release -f net5.0 -r osx-x64 --self-contained true -p:PublishSingleFile=true
+
+# 移动应用文件
+cd ..
+cd ..
+cp -R -f ProjectFolder/bin/release/net5.0/osx-x64/publish/* "build/osx/App/AppName.app/Contents/MacOS/"
+cd "build/osx/"
+
+APP_ENTITLEMENTS="AppEntitlements.entitlements"
+APP_SIGNING_IDENTITY="3rd Party Mac Developer Application: [***]"
+INSTALLER_SIGNING_IDENTITY="3rd Party Mac Developer Installer: [***]"
+APP_NAME="App/AppName.app"
+
+#<这里使用相对符号链接把应用资源移动到 Resources 文件夹>
+
+#<这里使用相对符号链接把 .dylib 文件移动到 Frameworks 文件夹>
+
+echo "[INFO] 切换 provisionprofile 到 AppStore"
+\cp -R -f AppNameAppStore.provisionprofile "App/AppName.app/Contents/embedded.provisionprofile"
+
+echo "[INFO] 修正 libuv.dylib 的架构"
+lipo -remove i386 "App/AppName.app/Contents/Frameworks/libuv.dylib" "App/AppName.app/Contents/Frameworks/libuv.dylib"
+
+find "$APP_NAME/Contents/Frameworks/"|while read fname; do
+    if [[ -f $fname ]]; then
+        echo "[INFO] Signing $fname"
+        codesign --force --sign "$APP_SIGNING_IDENTITY" "$fname"
+    fi
+done
+
+echo "[INFO] 正在签署应用主可执行文件"
+codesign --force --entitlements "$APP_ENTITLEMENTS" --sign "$APP_SIGNING_IDENTITY" "App/AppName.app/Contents/MacOS/AppName"
+
+echo "[INFO] 正在签署 app bundle"
+codesign --force --entitlements "$APP_ENTITLEMENTS" --sign "$APP_SIGNING_IDENTITY" "$APP_NAME"
+
+echo "[INFO] 正在创建 AppName.pkg"
+productbuild --component App/AppName.app /Applications --sign "$INSTALLER_SIGNING_IDENTITY" AppName.pkg
+```
+
+### 测试安装包
+
+把你的 `.app` 复制到 Applications 文件夹并启动它。如果能够正常启动，说明你前面的步骤基本都做对了；如果崩溃了，请打开 Console 应用并查看崩溃报告。
+
+### 上传安装包到 App Store
+
+打开 Transporter 应用，登录账号，选择你的 \*.pkg 安装包，然后等待验证并上传到 App Store。
+
+如果你收到任何错误，请修复问题后重新打包应用，并在 Transporter 中移除旧文件，再重新选择一次。
+
+上传成功后，你就能在 App Store Connect 中看到你的安装包。
+
+### 在 GitHub Actions 工作流中打包
+
+在 CI/CD 流水线中，使用 `dotnet` 命令构建应用本身并不复杂。但若要让代码签名和公证也能正常工作，还需要额外做一些准备。
+
+`codesign` 和 `notarytool` 会从构建机器上的 Keychain 中读取证书与认证信息，并据此与公证服务通信：
+
+```bash
+# 创建一个新的 keychain
+security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD}}" build.keychain
+# 将它设为默认 keychain
+security default-keychain -s build.keychain
+# 解锁 keychain，这样后续使用时就不会弹出授权提示
+security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD}}" build.keychain
+```
+
+`KEYCHAIN_PASSWORD` 是你专门为这个 keychain 设置的密码。它可以在每次构建时动态生成，也可以是你每次构建都重复使用的固定密码。
+
+接下来，需要把签名证书导入到这个 keychain 中。由于 GitHub secrets 只支持字符串，证书 `.p12` 文件需要先以 base64 编码形式保存。在流水线里，再把这个字符串解码成文件并导入 keychain：
+
+```bash
+# 把证书解码为文件
+echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
+# 导入到 keychain
+security import certificate.p12 -k build.keychain -P "${{ secrets.MACOS_CERTIFICATE_PWD}}" -T /usr/bin/codesign
+```
+
+`MACOS_CERTIFICATE` 是经过 base64 编码的 `.p12` 文件内容，`MACOS_CERTIFICATE_PWD` 则是该 `.p12` 文件的密码。
+
+为了防止代码签名期间弹出授权对话框，需要让 keychain 允许 `codesign` 访问：
+
+```bash
+# 允许 codesign 访问 keychain
+security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD}}" build.keychain
+```
+
+由于 Apple 要求开发者账号启用多因素认证（MFA），`notarytool` 需要使用一个专门的 app-password。你可以在 Apple 开发者站点生成这个密码。下面我们会把它添加给 `notarytool`，以便后续使用：
+
+```bash
+xcrun notarytool store-credentials "AC_PASSWORD" --apple-id "${{ secrets.APPLE_ID }}" --team-id ${{ env.TEAM_ID }} --password "${{ secrets.NOTARY_TOOL_PASSWORD }}"
+```
+
+`TEAM_ID` 是 App Store Connect 中的团队 ID，`APPLE_ID` 是你的 Apple 账号邮箱地址，`NOTARY_TOOL_PASSWORD` 是你生成的 app-password。
+
+如果你想在 GitHub Actions 工作流中使用这些步骤，请把它们加到构建应用的 job 中，例如：
+
+```yaml
+jobs:
+  build_osx:
+    runs_on: macos-11
+    env:
+      TEAM_ID: MY_TEAM_ID
+    steps:
+    - name: Setup Keychain
+      run: |
+        security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD}}" build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD}}" build.keychain
+        echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
+        security import certificate.p12 -k build.keychain -P "${{ secrets.MACOS_CERTIFICATE_PWD}}" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD}}" build.keychain
+        xcrun notarytool store-credentials "AC_PASSWORD" --apple-id "${{ secrets.APPLE_ID }}" --team-id ${{ env.TEAM_ID }} --password "${{ secrets.NOTARY_TOOL_PASSWORD }}"
+```
+
+按这种方式配置后，你就不需要再为 `codesign` 或 `notarytool` 额外指定具体的 keychain 文件了。
+
+接下来就是发布应用并为其签名。  
+首先，给 job 添加下面这个环境变量：
+
+```yaml
+    env:
+      SIGNING_IDENTITY: thumbprint_of_certificate_added_to_keychain
+```
+
+然后再添加以下步骤：
+
+```yaml
+    - name: Publish app
+      run: dotnet publish -c Release -r osx-x64 -o $RUNNER_TEMP/MyApp.app/Contents/MacOS MyApp.csproj
+    - name: Codesign app
+      run: |
+        find "$RUNNER_TEMP/MyApp.app/Contents/MacOS/"|while read fname; do
+          if [ -f "$fname" ]
+          then
+              echo "[INFO] Signing $fname"
+              codesign --force --timestamp --options=runtime --entitlements MyApp.entitlements --sign "${{ env.$SIGNING_IDENTITY }}" "$fname"
+          fi
+        done
+        codesign --force --timestamp --options=runtime --entitlements MyApp.entitlements --sign "${{ env.SIGNING_IDENTITY }}" "$RUNNER_TEMP/MyApp.app"
+```
+
+> **注意：** `RUNNER_TEMP` 是 GitHub Actions 提供的环境变量
+
+完成代码签名后，就可以通过添加以下步骤来对 app bundle 进行公证：
+
+```yaml
+    - name: Notarise app
+      run: |
+        ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/MyApp.app" "$RUNNER_TEMP/MyApp.zip"
+        xcrun notarytool submit "$RUNNER_TEMP/MyApp.zip" --wait --keychain-profile "AC_PASSWORD"
+        xcrun stapler staple "$RUNNER_TEMP/MyApp.app"
+```
+
+执行这个工作流后，你将获得一个已经签名并完成公证的 app bundle，接下来即可用于打包成磁盘镜像或安装程序。
+
+如果你想验证代码签名是否真的生效，首先需要先下载这个应用，以触发 macOS 的隔离（quarantine）机制。你可以把它发送到自己的邮箱，或通过 WeTransfer 一类的服务下载它。
+
+下载完成后再启动这个 app bundle 时，你应该会看到 macOS 弹出提示，表示该应用已经过扫描，未发现恶意软件。

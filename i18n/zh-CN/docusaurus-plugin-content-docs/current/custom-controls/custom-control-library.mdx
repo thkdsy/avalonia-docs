@@ -1,0 +1,196 @@
+---
+id: custom-control-library
+title: 如何创建并引用自定义控件库
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import NewClassLibraryVS from '/img/guides/ui-development/custom-controls/new-class-library-vs.png';
+import NewClassLibraryRider from '/img/guides/ui-development/custom-controls/new-class-library-rider.png';
+import InstallAvaloniaInClassLibraryVS from '/img/guides/ui-development/custom-controls/install-avalonia-in-class-library-vs.png';
+import InstallAvaloniaInClassLibraryRider from '/img/guides/ui-development/custom-controls/install-avalonia-in-class-library-rider.png';
+import CustomControlSolution from '/img/guides/ui-development/custom-controls/custom-control-solution.png';
+import CustomControlPreview from '/img/guides/ui-development/custom-controls/custom-control-preview.png';
+
+本指南将向你展示如何创建一个自定义控件库，并在 _Avalonia UI_ 应用中引用它。
+
+## 创建自定义控件库
+
+### 创建新的类库项目
+
+首先，你需要一个 **class library** 项目，用来集中存放你的自定义控件文件。
+
+<Tabs>  
+  <TabItem value="rider" label="Rider">
+    1. 进入 **File → New Solution**。或者，你也可以通过 **Add → New Project**，把类库作为新项目加入现有解决方案。
+    2. 在左侧面板的 “Project Type” 区域中，选择 **Class Library**。
+    3. 为项目命名，例如 “CCLibrary”。
+    4. 在 “Target framework” 中选择你希望使用的 .NET 版本。
+    5. 点击 **Create**。
+
+    <Image light={NewClassLibraryRider} alt="Rider 中新建项目菜单的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+  </TabItem>
+  <TabItem value="vs" label="Visual Studio">
+    1. 进入 **File → New → Project/Solution**。
+    2. 选择 **.NET Class Library** 作为项目模板。如果它没有出现在推荐列表中，可以使用搜索框查找。
+    3. 为项目命名，例如 “CCLibrary”。
+    4. 在 “Target framework” 中选择你希望使用的 .NET 版本。
+    5. 点击 **Create**。
+
+    <Image light={NewClassLibraryVS} alt="Visual Studio 中新建项目菜单的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+  </TabItem>
+</Tabs>
+
+### 在类库项目中安装 Avalonia
+
+接下来，你需要在这个类库中安装 Avalonia 的 NuGet 包。
+
+<Tabs>  
+  <TabItem value="rider" label="Rider">
+    1. 在解决方案面板中选择你的类库项目。
+    2. 点击 **Tools → NuGet → Manage NuGet Packages**。
+    3. 在搜索框中输入 “Avalonia”。
+    4. 选择 **Avalonia**。
+    5. 选择你希望使用的版本。
+    6. 点击面板底部你的类库项目名称，将 Avalonia 安装到该项目中。
+
+    <Image light={InstallAvaloniaInClassLibraryRider} alt="展示如何在 Rider 中安装 Avalonia NuGet 包的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+  </TabItem>
+  <TabItem value="vs" label="Visual Studio">
+    1. 在解决方案资源管理器中选择你的类库项目。
+    2. 点击 **Project → Manage NuGet Packages**。
+    3. 切换到 **Browse** 选项卡，并搜索 “Avalonia”。
+    4. 选择 **Avalonia**。
+    5. 选择你希望使用的版本。
+    6. 点击 **Install**。
+
+    <Image light={InstallAvaloniaInClassLibraryVS} alt="展示如何在 Visual Studio 中安装 Avalonia NuGet 包的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+  </TabItem>
+</Tabs>
+
+### 向类库添加自定义控件
+
+现在类库已经准备好了，你可以开始往里面添加自定义控件。
+
+在这个示例中，我们将创建一个名为 `MyCustomControl` 的简单自定义控件。它是一个空白方块，你可以用任意颜色填充它。
+
+1. 在类库项目中创建一个新的 `.cs` 文件。
+2. 按照下面的方式创建这个自定义控件。
+
+```cs
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+
+namespace CCLibrary
+{
+
+    /// <summary>A custom control that renders a coloured rectangle.</summary>
+    public class MyCustomControl : Control
+    {
+        /// <remarks>
+        /// Defines a styled property for the background colour, which can be set in XAML.<br/>
+        /// AddOwner reuses the existing BackgroundProperty from Border.<br/>
+        /// </remarks>
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
+            Border.BackgroundProperty.AddOwner<MyCustomControl>();
+
+        /// <summary>Gets and sets the colour used to fill the rectangle.</summary>
+        public IBrush? Background
+        {
+            get { return GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
+        }
+
+        /// <summary>Renders the control.</summary>
+        public sealed override void Render(DrawingContext context)
+        {
+            if (Background != null) // Only render if a colour is set.
+            {
+                var renderSize = Bounds.Size; // Get the size of the control.
+                context.FillRectangle(Background, new Rect(renderSize)); // Fill the rectangle with the colour.
+            }
+            base.Render(context);
+        }
+    }
+}
+```
+
+之后你可以根据需要，继续向这个类库中添加任意数量的自定义控件。
+
+## 引用自定义控件库
+
+在 Avalonia 项目中引用你的自定义控件库，这样这些控件才能真正被使用。
+
+在这个示例中，我们已经通过 Avalonia MVVM 模板创建了一个新项目，名为 `AvaloniaCCLib`。
+
+<Image light={CustomControlSolution} alt="Visual Studio 中一个包含两个项目的解决方案截图。" position="center" maxWidth={400} cornerRadius="true"/>
+
+### 添加项目引用
+
+1. 打开你的 Avalonia 项目的 `.csproj` 文件。
+2. 在 `<Project>...</Project>` 标签内部，添加一个 `ProjectReference`，指向类库项目 `.csproj` 文件所在的路径。
+
+```xml
+<ItemGroup>
+  <ProjectReference Include="..\MyControlsLibrary\CCLibrary.csproj" />
+</ItemGroup>
+```
+
+### 添加 XML 命名空间声明
+
+现在，你可以在 Avalonia 项目的 `.axaml` 文件中声明命名空间，从而在 XAML 中访问这些自定义控件。
+
+1. 在 `<Window>` 的开始标签中添加类似这样一行：`xmlns:cc="using:CCLibrary"`。（如果你的类库项目名称不同，请记得改成对应名称。）
+
+2. 在窗口内容区域中，通过 `cc` 前缀来添加一个自定义控件。
+
+```xml
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:cc="using:CCLibrary"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AvaloniaCCLib.Views.MainWindow"
+        Title="AvaloniaCCLib">
+  <Window.Styles>
+    <Style Selector="cc|MyCustomControl">
+      <Setter Property="Background" Value="Yellow"/>
+    </Style>
+  </Window.Styles>
+
+  <cc:MyCustomControl Height="200" Width="300"/>
+
+</Window>
+```
+
+3. 构建解决方案。
+4. 确认你已经能在运行中的窗口或预览器中看到这个自定义控件。
+
+<Image light={CustomControlPreview} alt="IDE 截图：一侧显示 XAML 代码，另一侧显示界面预览。" position="center" maxWidth={400} cornerRadius="true"/>
+
+## XML 命名空间定义
+
+当你在 `.axaml` 文件中引用控件库时，也可以使用 URL 形式来标识命名空间。例如：
+
+```xml
+xmlns:cc="https://my.controls.url"
+```
+
+之所以可行，是因为控件库中可以定义 XML 命名空间映射。它们会把 URL 映射到代码命名空间，并通常写在项目的 `Properties/AssemblyInfo.cs` 文件中。（你可以参考这份[源代码示例](https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Controls/Properties/AssemblyInfo.cs)。）
+
+```csharp
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia")]
+```
+
+### 多个命名空间定义
+
+你可以让一个 URL 同时映射到控件库中的多个命名空间。做法很简单：添加多条使用相同 URL、但指向不同代码命名空间的 XML 命名空间定义即可。
+
+```cs
+using Avalonia.Metadata;
+
+[assembly: XmlnsDefinition("https://my.controls.url", "My.NameSpace")]
+[assembly: XmlnsDefinition("https://my.controls.url", "My.NameSpace.Other")]
+```

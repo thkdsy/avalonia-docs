@@ -1,0 +1,120 @@
+---
+id: install-avalonia
+title: 安装 Avalonia
+description: 安装 .NET SDK 和 Avalonia 项目模板，以便你可以通过命令行或 IDE 创建 Avalonia 应用。
+doc-type: how-to
+---
+
+<p><small>{frontMatter.description}</small></p>
+<br/>
+
+## 前置条件
+
+在安装 Avalonia 之前，请确认你已经具备：
+
+- **.NET 8.0 或更高版本**（截至 2025 年 10 月）
+
+如果你尚未安装 .NET，请从 [.NET 官网](https://dotnet.microsoft.com/en-us/download/dotnet) 下载，并按照与你的操作系统对应的安装说明完成安装。
+
+你可以通过运行以下命令验证安装是否成功：
+
+```bash
+dotnet --version
+```
+
+输出结果应显示 `8.0` 或更高版本。如果系统无法识别该命令，请确认 .NET SDK 所在目录已经加入系统 `PATH`。
+
+:::tip[Multiple .NET versions]
+你可以在同一台机器上并行安装多个 .NET SDK 版本。Avalonia 要求使用 .NET 8.0 或更高版本，但如果有需要，你的项目仍然可以通过多目标框架支持更早的目标框架。运行 `dotnet --list-sdks` 可以查看机器上的所有 SDK 版本。
+:::
+
+## 安装 Avalonia 模板
+
+Avalonia 使用标准的 .NET 模板来创建新项目。你可以通过以下命令安装它们：
+
+```bash
+dotnet new install Avalonia.Templates
+```
+
+你应该会看到一段输出，表示模板已经安装成功：
+
+```text
+Template Name                                 Short Name                  Language    Tags
+--------------------------------------------  --------------------------  ----------  ---------------------------------------------------------
+Avalonia .NET App                             avalonia.app                [C#],F#     Desktop/Xaml/Avalonia/Windows/Linux/macOS
+Avalonia .NET MVVM App                        avalonia.mvvm               [C#],F#     Desktop/Xaml/Avalonia/Windows/Linux/macOS
+Avalonia Cross Platform Application           avalonia.xplat              [C#],F#     Desktop/Xaml/Avalonia/Browser/Mobile
+Avalonia Resource Dictionary                  avalonia.resource                       Desktop/Xaml/Avalonia/Windows/Linux/macOS
+Avalonia Styles                               avalonia.styles                         Desktop/Xaml/Avalonia/Windows/Linux/macOS
+Avalonia TemplatedControl                     avalonia.templatedcontrol   [C#],F#     Desktop/Xaml/Avalonia/Windows/Linux/macOS
+Avalonia UserControl                          avalonia.usercontrol        [C#],F#     Desktop/Xaml/Avalonia/Windows/Linux/macOS
+Avalonia Window                               avalonia.window             [C#],F#     Desktop/Xaml/Avalonia/Windows/Linux/macOS
+```
+
+:::tip
+你可以随时通过以下命令查看当前已安装的模板：
+
+```bash
+dotnet new list
+```
+
+查找名称中包含 “Avalonia” 的条目即可。
+:::
+
+### 更新已安装模板
+
+如果你之前已经安装过这些模板，可以将它们更新到最新版本：
+
+```bash
+dotnet new update
+```
+
+这会更新所有已安装的模板包，其中也包括 `Avalonia.Templates`。如果你需要安装某个特定版本的模板（例如为了匹配某个特定的 Avalonia 发布版本），可以显式指定版本号：
+
+```bash
+dotnet new install Avalonia.Templates::11.2.0
+```
+
+### 卸载模板
+
+如果你需要删除 Avalonia 模板并重新开始，可以执行：
+
+```bash
+dotnet new uninstall Avalonia.Templates
+```
+
+然后再使用前面展示的 `dotnet new install` 命令重新安装。
+
+:::note
+如果你安装了 Avalonia for Visual Studio 扩展，这些模板会自动包含在内。只有在你使用其他 IDE，或者想通过命令行创建项目时，才需要手动运行 `dotnet new install`。
+:::
+
+## 验证安装
+
+创建一个简单的测试项目，以确认一切都能正常工作：
+
+```bash
+dotnet new avalonia.app -o TestApp
+cd TestApp
+dotnet build
+```
+
+如果构建成功，就说明安装已经完成。测试结束后，你可以删除 `TestApp` 文件夹。
+
+### 常见问题
+
+- **`dotnet new` 没有列出 Avalonia 模板。** 请确认你已经运行过 `dotnet new install Avalonia.Templates`，并且命令执行时没有报错。重启终端后再试一次。
+- **构建错误提示缺少 SDK。** 请确认 `dotnet --version` 输出的是 8.0 或更高版本。如果父目录中的 `global.json` 把默认 SDK 固定为旧版本，请删除该文件，或将其更新为要求兼容的 SDK 版本。
+- **在 macOS 或 Linux 上遇到权限错误。** 如果安装命令因为权限问题失败，请确认你没有使用 `sudo` 运行它。.NET 模板引擎会把模板安装到你的用户目录中，不需要管理员权限。
+
+## 下一步
+
+<div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+  <Button label="配置你的 IDE →" link="/docs/get-started/set-up-your-ide" variant="primary" outline />
+</div>
+
+## 另请参阅
+
+- [配置你的 IDE](/docs/get-started/set-up-your-ide)
+- [创建你的第一个项目](/docs/get-started/create-your-first-project)
+- [支持的平台](/docs/supported-platforms)

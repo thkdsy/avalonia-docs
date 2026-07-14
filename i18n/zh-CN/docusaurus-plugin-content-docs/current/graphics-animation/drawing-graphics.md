@@ -1,0 +1,141 @@
+---
+id: drawing-graphics
+title: 绘制图形
+description: Avalonia 2D 图形系统概览，包括形状、几何图形和动画。
+doc-type: overview
+---
+
+Avalonia 提供了一套 2D 图形系统，具备与分辨率无关的渲染能力、基础形状图元以及动画支持。
+
+## 图形系统
+
+Avalonia 提供了一套广泛、可扩展且灵活的图形能力，具有以下优势：
+
+* 与分辨率无关、与设备无关的图形系统。Avalonia 图形系统的基本测量单位是设备无关像素，也就是 1/96 英寸，它不受实际屏幕分辨率影响，是实现分辨率无关与设备无关渲染的基础。每个设备无关像素都会自动缩放，以匹配目标系统的每英寸点数（dpi）设置。
+* 更高精度。Avalonia 坐标系统使用双精度浮点数，而不是单精度浮点数。变换和不透明度数值同样以双精度表达。
+* 高级图形与动画支持。Avalonia 会替你管理动画场景，从而简化图形编程；你无需自己操心场景处理、渲染循环和双线性插值。此外，Avalonia 还提供命中测试支持以及完整的 alpha 合成功能。
+* Skia。默认情况下，Avalonia 使用 [Skia 渲染引擎](https://skia.org/)，这也是 Google Chrome、Chrome OS、Android、Mozilla Firefox、Firefox OS 以及许多其他产品所使用的渲染引擎。
+
+## 2D 形状与几何图形
+
+Avalonia 提供了一套常见的矢量绘制 2D 形状库，例如 `Ellipse`、`Line`、`Path`、`Polygon` 和 `Rectangle`。
+
+```xml
+<Canvas Background="Yellow" Width="300" Height="400">
+    <Rectangle Fill="Blue" Width="63" Height="41" Canvas.Left="40" Canvas.Top="31">
+        <Rectangle.OpacityMask>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="Black"/>
+                    <GradientStop Offset="1" Color="Transparent"/>
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+        </Rectangle.OpacityMask>     
+    </Rectangle>
+    <Ellipse Fill="Green" Width="58" Height="58" Canvas.Left="88" Canvas.Top="100"/>
+    <Path Fill="Orange" Data="M 0,0 c 0,0 50,0 50,-50 c 0,0 50,0 50,50 h -50 v 50 l -50,-50 Z" Canvas.Left="30" Canvas.Top="250"/>
+    <Path Fill="OrangeRed" Canvas.Left="180" Canvas.Top="250">
+        <Path.Data>
+            <PathGeometry>
+                <PathFigure StartPoint="0,0" IsClosed="True">
+                    <QuadraticBezierSegment Point1="50,0" Point2="50,-50" />
+                    <QuadraticBezierSegment Point1="100,-50" Point2="100,0" />
+                    <LineSegment Point="50,0" />
+                    <LineSegment Point="50,50" />
+                </PathFigure>
+            </PathGeometry>
+        </Path.Data>
+    </Path>
+    <Line StartPoint="120,185" EndPoint="30,115" Stroke="Red" StrokeThickness="2"/>
+    <Polygon Points="75,0 120,120 0,45 150,45 30,120" Stroke="DarkBlue" StrokeThickness="1" Fill="Violet" Canvas.Left="150" Canvas.Top="31"/>
+    <Polyline Points="0,0 65,0 78,-26 91,39 104,-39 117,13 130,0 195,0" Stroke="Brown" Canvas.Left="30" Canvas.Top="350"/>
+</Canvas>
+```
+
+将鼠标悬停到每个形状上，可以查看它们各自的名称：
+
+<div style={{margin: '24px 0', display: 'flex', justifyContent: 'center'}}>
+<svg width="300" height="400" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" style={{borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(128,128,128,0.15)'}}>
+  <style>{`
+    .dg-shape { transition: opacity 0.2s ease; cursor: pointer; }
+    .dg-shapes:hover .dg-shape { opacity: 0.3; }
+    .dg-shapes:hover .dg-shape:hover { opacity: 1; }
+    .dg-label {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      fill: white;
+      paint-order: stroke;
+      stroke: rgba(0,0,0,0.75);
+      stroke-width: 3.5px;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+    .dg-shape:hover .dg-label { opacity: 1; }
+  `}</style>
+  <defs>
+    <linearGradient id="dg-opmask" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="white" stopOpacity="1"/>
+      <stop offset="100%" stopColor="white" stopOpacity="0"/>
+    </linearGradient>
+    <mask id="dg-rmask">
+      <rect x="40" y="31" width="63" height="41" fill="url(#dg-opmask)"/>
+    </mask>
+  </defs>
+  {/* Canvas 背景 */}
+  <rect width="300" height="400" fill="#FFFF00"/>
+  <g className="dg-shapes">
+    {/* 带 OpacityMask 的 Rectangle */}
+    <g className="dg-shape">
+      <rect x="40" y="31" width="63" height="41" fill="blue" mask="url(#dg-rmask)"/>
+      <text className="dg-label" x="71" y="24" textAnchor="middle">Rectangle</text>
+    </g>
+    {/* Ellipse */}
+    <g className="dg-shape">
+      <ellipse cx="117" cy="129" rx="29" ry="29" fill="green"/>
+      <text className="dg-label" x="117" y="172" textAnchor="middle">Ellipse</text>
+    </g>
+    {/* Line */}
+    <g className="dg-shape">
+      <line x1="120" y1="185" x2="30" y2="115" stroke="red" strokeWidth="2"/>
+      {/* 更宽的透明命中区域，方便悬停 */}
+      <line x1="120" y1="185" x2="30" y2="115" stroke="transparent" strokeWidth="14"/>
+      <text className="dg-label" x="82" y="140" textAnchor="middle">Line</text>
+    </g>
+    {/* Polygon */}
+    <g className="dg-shape">
+      <polygon points="75,0 120,120 0,45 150,45 30,120" transform="translate(150,31)" fill="violet" stroke="darkblue" strokeWidth="1"/>
+      <text className="dg-label" x="225" y="25" textAnchor="middle">Polygon</text>
+    </g>
+    {/* Path（迷你语言） */}
+    <g className="dg-shape">
+      <path d="M 0,0 c 0,0 50,0 50,-50 c 0,0 50,0 50,50 h -50 v 50 l -50,-50 Z" transform="translate(30,250)" fill="orange"/>
+      <text className="dg-label" x="80" y="242" textAnchor="middle">Path</text>
+    </g>
+    {/* Path（PathGeometry） */}
+    <g className="dg-shape">
+      <path d="M 0,0 Q 50,0 50,-50 Q 100,-50 100,0 L 50,0 L 50,50 Z" transform="translate(180,250)" fill="orangered"/>
+      <text className="dg-label" x="230" y="242" textAnchor="middle">Path</text>
+    </g>
+    {/* Polyline */}
+    <g className="dg-shape">
+      <polyline points="0,0 65,0 78,-26 91,39 104,-39 117,13 130,0 195,0" transform="translate(30,350)" fill="none" stroke="brown" strokeWidth="1"/>
+      {/* 更宽的透明命中区域 */}
+      <polyline points="0,0 65,0 78,-26 91,39 104,-39 117,13 130,0 195,0" transform="translate(30,350)" fill="none" stroke="transparent" strokeWidth="14"/>
+      <text className="dg-label" x="127" y="340" textAnchor="middle">Polyline</text>
+    </g>
+  </g>
+</svg>
+</div>
+
+## 添加动画
+
+Avalonia UI 内置动画支持，你可以让控件实现放大、抖动、旋转、淡入淡出等效果，也可以制作有趣的页面过渡动画等。Avalonia 使用一套类 CSS 的动画系统，支持[过渡](/docs/graphics-animation/control-transitions)和[关键帧动画](/docs/graphics-animation/keyframe-animations)。
+
+## 另请参阅
+
+- [形状与几何图形](/docs/graphics-animation/shapes-and-geometries)：形状控件与几何类型。
+- [画刷](/docs/graphics-animation/brushes)：用于填充和描边的画刷类型。
+- [动画](/docs/graphics-animation/animations)：动画类型概览。

@@ -1,0 +1,148 @@
+---
+id: adding-some-layout
+title: 添加布局
+description: 了解如何使用布局控件，在你的温度转换器应用中放置多个控件。本文是 Avalonia 入门教程 7 篇中的第 3 篇。
+doc-type: tutorial
+---
+
+import TemperatureConverterTextOnly from '/img/get-started/temperature-converter-text-only.png';
+import TemperatureConverterBlueBorder from '/img/get-started/temperature-converter-blue-border.png';
+import TemperatureConverterEmptyGrid from '/img/get-started/temperature-converter-empty-grid.png';
+import TemperatureConverterFilledGrid from '/img/get-started/temperature-converter-filled-grid.png';
+
+此时，你的温度转换器应用在窗口中央只有一个按钮。之所以暂时不能继续直接添加其他元素，是因为每个 Avalonia 窗口在其内容区域中只允许放置一个控件。（关于布局区域的更多说明，会在下一页[自定义 Avalonia 窗口](/docs/get-started/starter-tutorial/customizing-the-avalonia-window)中介绍。）
+
+如果想在窗口中放置多个 UI 元素，就必须使用**布局控件**。
+
+关于布局控件的更多信息，请参阅[布局控件](/controls)。
+
+## 插入一个 StackPanel
+
+你可以使用 `StackPanel` 布局控件，在按钮上方放置一些文本。
+
+1. 在 **MainWindow.axaml** 文件中，用 `<StackPanel>...</StackPanel>` 标签把 `Button` 包裹起来。
+
+```xml
+<StackPanel>
+	<Button>Calculate</Button>
+</StackPanel>
+```
+
+2. 在按钮上方添加一个 [`TextBlock`](/api/avalonia/controls/textblock)。（你可能还记得默认的 **MainWindow.axaml** 中就有 `TextBlock` 标签，它会在窗口中显示文本。）请将 `TextBlock` 的属性设置为：
+
+- `Margin="5"`
+- `FontSize="24"`
+- `HorizontalAlignment="Center"`
+- `Text="Temperature Converter"`
+
+```xml
+<StackPanel>
+    <TextBlock Margin="5"
+               FontSize="24" 
+               HorizontalAlignment="Center"
+               Text="Temperature Converter">
+    </TextBlock>
+
+    <Button HorizontalAlignment="Center">Calculate</Button>
+</StackPanel>
+```
+
+3. 运行应用，或者查看预览器。此时你应该会看到 “Temperature Converter” 文本显示在 **Calculate** 按钮上方。
+
+<Image light={TemperatureConverterTextOnly} alt="开发中的应用截图：按钮上方显示了一段文本。" position="center" maxWidth={400} cornerRadius="true" margin="0,0,30,0"/>
+
+4. 再用 `<Border>...</Border>` 标签把 `TextBlock` 包裹起来，并把 `Border` 的属性设置为：
+
+- `Margin="5"`
+- `CornerRadius="10"`
+- `Background="LightBlue"`
+
+```xml
+<StackPanel>
+    <Border Margin="5" CornerRadius="10" Background="LightBlue">
+        <TextBlock Margin="5"
+                   FontSize="24" 
+                   HorizontalAlignment="Center"
+                   Text="Temperature Converter">
+        </TextBlock>
+    </Border>
+
+    <Button HorizontalAlignment="Center">Calculate</Button>
+</StackPanel>
+```
+
+5. 运行应用，或者查看预览器。你应该会看到 “Temperature Converter” 文本现在位于一个带圆角的蓝色框内。
+
+<Image light={TemperatureConverterBlueBorder} alt="开发中的应用截图：文本被包在按钮上方的蓝色边框中。" position="center" maxWidth={400} cornerRadius="true" margin="0,0,30,0"/>
+
+:::note
+默认情况下，`StackPanel` 会把元素按垂直方向堆叠排列。你也可以通过把 `Orientation` 属性设为 `Horizontal`，让它改为水平排列。
+:::
+
+## 插入一个 Grid
+
+接下来，向温度转换器应用中添加一个 [`Grid`](/api/avalonia/controls/grid) 布局控件。`Grid` 会创建由行和列构成的单元格，你可以把更多控件放进这些单元格中。
+
+1. 如果应用仍在运行，请先停止它。
+2. 在 **MainWindow.axaml** 文件中，在 `</Border>` 和 `<Button>` 之间插入一个 `<Grid>...</Grid>` 标签。
+
+```xml
+<StackPanel>
+    <Border Margin="5" CornerRadius="10" Background="LightBlue">
+        <TextBlock Margin="5"
+            HorizontalAlignment="Center"
+            FontSize="24"
+            Text="Temperature Converter">
+        </TextBlock>
+    </Border>
+    <Grid ShowGridLines="True" Margin="5" 
+          ColumnDefinitions="120, 100"
+          RowDefinitions="Auto, Auto">
+    </Grid>
+    <Button HorizontalAlignment="Center">Calculate</Button>
+</StackPanel>
+```
+
+这里我们为 `Grid` 指定了一些属性：
+
+- 它有两列两行。
+- 网格线是可见的。
+- 单元格高度会根据内容自动缩放。由于空单元格的自动高度为零，所以此时在预览器中，这个 `Grid` 看起来会像一条水平直线。
+
+<Image light={TemperatureConverterEmptyGrid} alt="开发中的应用截图：包含标题、一条虚线以及一个按钮。" position="center" maxWidth={400} cornerRadius="true"/>
+
+## 在 Grid 中插入控件
+
+1. 在网格左侧的单元格中插入 `TextBlock` 控件，并使用 `Grid.Row` 与 `Grid.Column` 属性指定目标单元格。用这些文本块分别填入 “Celsius” 和 “Fahrenheit”。
+
+:::note
+`Grid` 中每一行或每一列的第一个单元格编号都是 0。
+:::
+
+```xml
+        <Grid ShowGridLines="True" Margin="5" 
+              ColumnDefinitions="120, 100"
+              RowDefinitions="Auto, Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Margin="10">Celsius</TextBlock>
+            <TextBlock Grid.Row="1" Grid.Column="0" Margin="10">Fahrenheit</TextBlock>
+        </Grid>
+```
+
+2. 再在网格右侧的单元格中插入 `TextBox` 控件，同样使用 `Grid.Row` 与 `Grid.Column` 属性指定单元格位置。`TextBox` 是一种可供键盘输入内容的控件。
+
+```xml
+        <Grid ShowGridLines="True" Margin="5" 
+              ColumnDefinitions="120, 100"
+              RowDefinitions="Auto, Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Margin="10">Celsius</TextBlock>
+            <TextBox Grid.Row="0" Grid.Column="1" Margin="0 5" Text="0"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Margin="10">Fahrenheit</TextBlock>
+            <TextBox Grid.Row="1" Grid.Column="1" Margin="0 5" Text="0"/>
+        </Grid>
+```
+
+3. 运行应用，或者查看预览器。你应该会看到这些文本和输入框已经被添加到了窗口中，并位于网格线标记出来的单元格内。
+
+<Image light={TemperatureConverterFilledGrid} alt="开发中的应用截图：包含标题、网格中的输入框，以及一个按钮。" position="center" maxWidth={400} cornerRadius="true" margin="10,0,30,0"/>
+
+在本教程的下一页中，你将学习如何调整应用窗口的大小。

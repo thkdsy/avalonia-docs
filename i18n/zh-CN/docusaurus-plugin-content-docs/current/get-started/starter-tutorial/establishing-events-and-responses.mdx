@@ -1,0 +1,100 @@
+---
+id: establishing-events-and-responses
+title: 建立事件与响应
+description: 了解如何创建事件处理器，以检测按钮何时被点击。本文是 Avalonia 入门教程 7 篇中的第 5 篇。
+doc-type: tutorial
+---
+
+import MainWindowCodeBehindLocation from '/img/get-started/mainwindow-codebehind-location.png';
+import RiderRunDebugMode from '/img/get-started/rider-run-debug-mode.png';
+import VsDebugOutputClick from '/img/get-started/vs-debug-output-click.png';
+
+现在我们的温度转换器应用看起来已经初具雏形，但它还没有任何实际行为。接下来，我们需要让 **Calculate** 按钮能够响应用户操作，例如点击。
+
+## 使用代码后置创建事件处理器
+
+XAML 文件可以关联一个 C# 源文件。你可以在这个文件中编写按钮的事件处理代码，这种方式称为“代码后置”（code-behind）。
+
+1. 在你的 IDE 中，定位到项目目录中的 **Views → MainWindow.axaml → MainWindow.axaml.cs**。这就是主窗口 XAML 对应的 C# 代码后置文件。
+
+<Image light={MainWindowCodeBehindLocation} alt="展示主窗口代码后置文件在文件树中位置的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+
+2. 打开 **MainWindow.axaml.cs**。
+3. 找到文件顶部的 `using` 指令。此时你应该只能看到一行 `using Avalonia.Controls;`。请再添加下面这两个 `using` 指令：
+
+```csharp
+using Avalonia.Interactivity;
+using System.Diagnostics;
+```
+
+4. 在文件下方找到 `public partial class MainWindow : Window` 这一行。这个类目前只包含主窗口的构造函数 `public MainWindow()`。请在构造函数下面添加以下代码：
+
+```csharp
+private void Button_OnClick(object? sender, RoutedEventArgs e)
+{
+    Debug.WriteLine("Click!");
+}
+```
+
+5. 现在你的 C# 文件应该类似下面这样：
+
+```csharp
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using System.Diagnostics;
+
+namespace GetStartedApp.Views;
+
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();
+    }
+    
+    private void Button_OnClick(object? sender, RoutedEventArgs e)
+    {
+        Debug.WriteLine("Click!");
+    }
+}
+```
+
+6. 切换回你的 XAML 文件 **MainWindow.axaml**。
+7. 找到文件底部附近的 `<Button>`。
+8. 给 `<Button>` 标签添加 `Click` 属性，并把它关联到 `Button_OnClick`，如下所示：
+
+```xml
+<Button HorizontalAlignment="Center" Click="Button_OnClick">Calculate</Button>
+```
+
+## 检查事件处理器是否生效
+
+为了验证事件处理器是否创建正确，我们可以查看调试输出，确认在点击 **Calculate** 按钮时是否打印了 “Click!”。
+
+<Tabs groupId="ide">
+  <TabItem value="vs" label="Visual Studio" default>
+    1. 打开 **Output** 窗口，它默认位于下方分栏区域。在 “Show output from:” 下拉菜单中选择 **Debug**。
+    2. 运行应用。
+    3. 在运行中的应用窗口里，多点击几次 **Calculate** 按钮。
+    4. 你应该会在输出窗口中看到 “Click!” 被打印出来。
+
+    <Image light={VsDebugOutputClick} alt="Visual Studio 输出窗口的截图，其中打印出了 'Click!'。" position="center" maxWidth={400} cornerRadius="true"/>
+
+  </TabItem>
+  <TabItem value="rider" label="Rider">
+	1. 以调试模式运行 GetStartedApp。
+
+    <Image light={RiderRunDebugMode} alt="展示 Rider 中以调试模式运行项目按钮位置的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+
+	2. 打开底部面板中的 **Debug Output** 选项卡。
+    3. 在运行中的应用窗口里，多点击几次 **Calculate** 按钮。
+    4. 你应该会在 Rider 的调试输出中看到 “Click!” 被打印出来。
+  </TabItem>
+</Tabs>
+
+在下一页中，你将学习如何实现把摄氏温度转换为华氏温度的公式。
+
+## 另请参阅
+
+- [添加布局](/docs/get-started/starter-tutorial/adding-some-layout)：本教程的上一步。
+- [实现数据转换](/docs/get-started/starter-tutorial/converting-data)：本教程的下一步。

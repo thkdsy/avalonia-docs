@@ -1,0 +1,279 @@
+---
+id: xaml-preview-and-design-settings
+title: XAML 实时预览与设计时设置
+sidebar_label: XAML 实时预览器
+description: 了解在使用 Avalonia 开发时如何使用实时 XAML 预览器，以及如何设置设计时属性与数据来简化 UI 开发。
+tags:
+  - avalonia plus
+---
+
+import Pill from '/src/components/global/Pill';
+import RiderXamlPreviewer from '/img/guides/ui-development/xaml-preview-and-design-settings/rider-xaml-previewer.png';
+import VsXamlPreviewer from '/img/guides/ui-development/xaml-preview-and-design-settings/vs-xaml-previewer.png';
+import TestXamlPreviewer from '/img/guides/ui-development/xaml-preview-and-design-settings/test-xaml-previewer.png';
+import DesignTimeMockPreview from '/img/guides/ui-development/xaml-preview-and-design-settings/design-time-mock-preview.png';
+
+<p><small>{frontMatter.description}</small></p>
+
+## 使用 XAML 预览器
+
+JetBrains Rider 搭配第三方 AvaloniaRider 插件，以及 Visual Studio 搭配 Avalonia for Visual Studio 插件时，都可以使用实时 XAML 预览器。借助 XAML 预览器，你可以在编写代码的同时看到 XAML 的界面变化。为了获得最佳开发体验，我们强烈建议使用它。
+
+### 启用 XAML 预览器
+
+要在 Rider 和 Visual Studio 中启用 XAML 预览器，请按以下步骤操作：
+
+<Tabs groupId="ide">  
+  <TabItem value="rider" label="Rider">
+	  1. 在 Rider 中，从顶部标签栏中选中一个 **.axaml** 文件。
+    2. 在顶部栏右侧点击 **Editor and Preview**。
+    3. 构建你的项目。
+
+    <Image light={RiderXamlPreviewer} alt="标出 Rider 中启用 XAML 预览按钮位置的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+  </TabItem>
+  <TabItem value="vs" label="Visual Studio">
+    <Pill variant="primary" href="https://avaloniaui.net/pricing">Avalonia Plus</Pill>
+    <br/><br/>
+
+    在安装 **Visual Studio for Avalonia** 扩展后，XAML 预览器通常默认就是打开的。如果没有打开，请按以下步骤启用。
+
+    1. 在 Visual Studio 中打开一个 **.axaml** 文件。
+    2. 点击编辑器窗口顶部的 **Split View**。
+    3. 构建你的项目。
+
+    <Image light={VsXamlPreviewer} alt="标出 Visual Studio 中启用 XAML 预览按钮位置的截图。" position="center" maxWidth={400} cornerRadius="true"/>
+  </TabItem>
+</Tabs>
+
+### 检查是否正常工作
+
+1. 打开任意一个 **.axaml** 文件。这里我们以默认 Avalonia 模板中的 **MainWindow.axaml** 为例。
+2. 找到靠近底部的 `<TextBlock>...</TextBlock>` XAML 标签。
+3. 删除 `{Binding Greeting}`，并把它改成任意文本，例如 “Nice preview!”。
+4. 当你输入时，应该能在预览面板中同步看到这段文字。
+
+<Image light={TestXamlPreviewer} alt="演示 Avalonia XAML 预览器测试效果的截图。" maxWidth={400} cornerRadius="true"/>
+
+<br/><br/>
+
+:::tip
+如果预览器没有响应你的修改，请尝试重新构建项目。
+:::
+
+## 设置设计时属性
+
+设计时属性只会作用于 XAML 预览器中的 UI 控件，不会影响应用运行时的真实属性。设置设计时属性可以帮助你在无需反复构建应用的情况下，完成 UI 的样式调整和布局定位。
+
+要使用设计时属性，你必须先在 XAML 文件中添加一个命名空间：
+
+```xml
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+```
+
+添加这个命名空间之后，就可以使用以下设计时属性：
+- `d:DesignWidth`
+- `d:DesignHeight`
+- `d:DataContext`
+
+### DesignWidth 与 DesignHeight
+
+`d:DesignWidth` 和 `d:DesignHeight` 属性会把你指定的宽度和高度应用到预览界面上。
+
+```xml
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AvaloniaApplication1.MainWindow">
+    Welcome to Avalonia!
+</Window>
+```
+
+### DataContext
+
+`d:DataContext` 属性会为预览器设置一个 `DataContext`。通常推荐把它和 `{x:Static}` 指令一起使用，以引用程序集中的某个静态属性：
+
+```xml
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:dd="clr-namespace:My.Namespace;assembly=MyAssembly"
+        d:DataContext="{x:Static dd:DesignData.ExampleViewModel}"
+        x:Class="AvaloniaApplication1.MainWindow">
+    Welcome to Avalonia!
+</Window>
+```
+
+```csharp
+namespace My.Namespace
+{
+    public static class DesignData
+    {
+        public static MyViewModel ExampleViewModel { get; } = new MyViewModel
+        {
+            // View Model initialization here.
+        };
+    }
+}
+```
+
+### Design.DataContext
+
+作为 `d:DataContext` 的替代方案，你也可以使用 `Design.DataContext` 附加属性。
+
+```xml
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:dd="clr-namespace:My.Namespace;assembly=MyAssembly"
+        x:Class="AvaloniaApplication1.MainWindow"
+        Design.Width="100">
+    <Design.DataContext>
+        <dd:MyViewModel />
+    </Design.DataContext>
+    Welcome to Avalonia!
+</Window>
+```
+
+### 在代码中设置设计时 DataContext
+
+前面介绍的设置设计时 `DataContext` 的方式，默认都假设 ViewModel 具有无参构造函数。但在某些场景下，例如使用典型的[依赖注入模式](/docs/app-development/dependency-injection)时，你的 ViewModel 可能必须带有构造参数。这种情况下，就可以使用 `Design.SetDataContext` 方法来引用一个带参数的 ViewModel 构造过程。
+
+```csharp
+public MainWindow()
+{
+    // 防止应用在真正运行时也设置预览器用的 DataContext。
+    if (Design.IsDesignMode)
+    {
+        // 这段代码可以放在 InitializeComponent 之前或之后。
+        Design.SetDataContext(this, new MainWindowViewModel(new DialogService()));
+    }
+    InitializeComponent();
+}
+```
+
+## 应用设计时数据
+
+设计时数据会在 XAML 预览器中为你的 UI 注入模拟数据。和设计时属性一样，这可以帮助你通过更接近真实场景的数据来完善界面设计，同时减少反复构建应用或频繁调用数据服务层的需要。
+
+在这个示例中，我们将展示如何结合 MVVM 模式使用设计时数据，来构建一个预约卡片的 UI。下面是该预约系统的基础功能代码。
+
+```csharp
+    // 数据属性
+    public string ServerName { get; set; } = null!;
+    public string ServiceTitle { get; set; } = null!;    
+    public decimal ServicePrice { get; set; }
+    public DateTime ServiceDateTime { get; set; }
+    public string Description { get; set; } = null!;  
+    
+    // 命令
+    private bool _isCancelVisible = true;
+
+    public bool IsCancelVisible
+    {
+        get => _isCancelVisible;
+        set => this.RaiseAndSetIfChanged(ref _isCancelVisible, value);
+    }
+
+    public ReactiveCommand<Unit, Unit> CancelAppointmentCommand =>
+        ReactiveCommand.Create(() =>
+        {
+            IsCancelVisible = false;
+        });
+
+```
+
+### 创建设计时 ViewModel
+
+现在我们需要创建一个用于设计时的 ViewModel 版本。这个设计版 ViewModel 中包含模拟数据，之后可以通过设计时 [`DataContext`](#datacontext) 来引用它。
+
+```csharp
+public class DesignAppointmentViewModel: AppointmentViewModel
+{
+    public DesignAppointmentViewModel()
+    {
+        ServerName = "John Price";
+        ServiceTitle = "Haircut and beard trim";
+        ServicePrice = (decimal)25.5;
+        ServiceDateTime = new DateTime(2023, 1, 3, 11, 15, 0);
+        Description = "Please allow 30 minutes.";
+    }
+}
+```
+
+### 引用设计时 ViewModel
+
+下一步，就是引用前面创建好的设计时 ViewModel，让它能够用模拟数据填充 UI。
+
+如果你使用的是编译绑定（从 Avalonia 11 开始这是默认方式），请这样做：
+
+1. 在控件的起始 XAML 标签中，添加 `xmlns:vm="using:AvaloniaApplication1.ViewModels"`，以导入 `ViewModels` 命名空间。（如果你的项目名称不同，请把示例中的 `AvaloniaApplication1` 换成你的项目名。）
+2. 仍然在起始 XAML 标签中，添加 `x:DataType="vm:DesignAppointmentViewModel"` 来声明 `ViewModel` 类型。这样设计时环境就可以对类属性进行类型检查。
+
+你的 XAML 文件大致应如下所示。
+   
+```xml
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:DesignTimeData.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
+             x:Class="DesignTimeData.Views.AppointmentView"
+             xmlns:vm="using:AvaloniaApplication1.ViewModels"
+             x:DataType="vm:DesignAppointmentViewModel">
+   
+   <Design.DataContext>    
+       <vm:DesignAppointmentViewModel/>
+   </Design.DataContext>
+
+</UserControl>
+```
+
+### 设计 UI
+
+现在你就可以继续设计预约卡片的 UI 了。下面是一个示例界面。
+
+```xml
+<Border CornerRadius="10" Background="LightBlue"  Width="350" Margin="20">
+  <DockPanel Width="350" >
+      
+    <StackPanel Height="10"
+                    DockPanel.Dock="Bottom"
+                    IsVisible="{Binding !IsCancelVisible, }" >
+    </StackPanel>
+
+    <Button Margin="0 10"
+            HorizontalAlignment="Center"
+            DockPanel.Dock="Bottom"
+            ClickMode="Release"
+            Command="{Binding CancelAppointmentCommand}"
+            IsVisible="{Binding IsCancelVisible}">Cancel</Button>
+
+    <StackPanel DockPanel.Dock="Left" Margin="10 10 0 0" Width="200" >
+      <TextBlock Text="{Binding ServiceTitle}" FontWeight="Bold"/>
+      <TextBlock Text="{Binding ServerName, StringFormat='with {0}'}"/>
+      <TextBlock Margin="0 5 0 0" 
+                 Text="{Binding ServiceDateTime, StringFormat={}{0:dd MMM yyyy}}"/>
+      <TextBlock Text="{Binding ServiceDateTime, StringFormat={}{0:HH:mm}}"/>
+      <TextBlock Margin="0 5" FontSize="20" 
+                 Text="{Binding ServicePrice, StringFormat={}{0:£0.00}}"/>
+      <TextBlock Text="{Binding Description, StringFormat={}{0:£0.00}}"/>
+    </StackPanel>
+
+    <Border DockPanel.Dock="Right"
+      Background="Gainsboro" CornerRadius="10"
+            Width="75" Height="75"
+            Margin="0 20 20 0">
+      <Image ToolTip.Tip="{Binding ServerName}" />
+    </Border>
+
+    <Rectangle/>
+
+  </DockPanel>
+</Border>
+```
+
+在设计时 ViewModel 配置完成后，XAML 预览器就会使用这些模拟数据显示开发中的 UI，大致效果如下：
+
+<Image light={DesignTimeMockPreview} alt="设计画布中一个模拟理发预约卡片的截图。" maxWidth={400} cornerRadius="true"/>

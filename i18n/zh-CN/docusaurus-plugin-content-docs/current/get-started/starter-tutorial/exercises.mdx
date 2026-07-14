@@ -1,0 +1,162 @@
+---
+id: exercises
+title: 练习题
+description: 通过三个编程练习测试你对 Avalonia 的掌握情况。本文是 Avalonia 入门教程 7 篇中的第 7 篇。
+doc-type: tutorial
+---
+
+现在你已经构建好了一个温度转换器应用，不妨通过以下三个练习来检验你对 Avalonia 的理解。
+
+## 练习 1：修改一个现有属性
+
+**Challenge level: ★**
+
+让 **GetStartedApp** 中的网格线不可见。
+
+<details>
+	<summary>Hint</summary>
+
+	你已经在 MainWindow.axaml 中使用过 `<Grid>`。
+</details>
+
+<details>
+	<summary>Solution</summary>
+	
+	在 **MainWindow.axaml** 中，找到 `<Grid>` 的开始标签。将 `ShowGridLines` 属性改为 `False`。
+
+	```xml
+	<Grid ShowGridLines="False" Margin="5" 
+      ColumnDefinitions="120, 100"
+      RowDefinitions="Auto, Auto, Auto">
+    ```
+</details>
+
+## 练习 2：添加一个新属性
+
+**Challenge level: ★★**
+
+让用户无法在 **GetStartedApp** 的 Fahrenheit 文本框中输入文本。
+
+<details>
+	<summary>Hint (1st)</summary>
+
+	查看 [`TextBox` API 参考](/api/avalonia/controls/textbox)，了解 `TextBox` 控件的更多信息。
+</details>
+
+<details>
+	<summary>Hint (2nd)</summary>
+
+	在 [`TextBox` API 参考](/api/avalonia/controls/textbox) 中，你会找到 `IsReadOnly` 这个属性。
+</details>
+
+<details>
+	<summary>Solution</summary>
+
+	在 **MainWindow.axaml** 中，找到 Fahrenheit 文本框对应的 `<TextBox>` 标签。为它添加 `IsReadOnly` 属性，并将其设为 `True`。
+
+	```xml
+	<TextBox Grid.Row="1" Grid.Column="1" Margin="0 5" Text="0" Name="Fahrenheit" IsReadOnly="True"/>
+	```
+</details>
+
+## 练习 3：编写一个新的事件响应
+
+**Challenge level: ★★★**
+
+让 **GetStartedApp** 在用户输入时就自动计算温度转换结果。
+
+<details>
+	<summary>Hint (1st)</summary>
+
+	查看 [`TextBox` API 参考](/api/avalonia/controls/textbox)，了解 `TextBox` 控件的更多信息。
+</details>
+
+<details>
+	<summary>Hint (2nd)</summary>
+
+	在 [`TextBox` API 参考](/api/avalonia/controls/textbox) 中，你会找到 `TextChanged` 事件。
+</details>
+
+<details>
+	<summary>Hint (3rd)</summary>
+
+	你的事件处理器定义在 C# 代码后置文件 MainWindow.axaml.cs 中，并且会在 XAML 文件 MainWindow.axaml 中引用它。
+</details>
+
+<details>
+	<summary>Solution</summary>
+
+	1. 在 **MainWindow.axaml** 中，找到 Celsius 文本框对应的 `<TextBox>` 标签。添加 `TextChanged` 事件，并为它命名，例如 `Celsius_TextChanged`。
+
+	```xml
+	<TextBox Grid.Row="0" Grid.Column="1" Margin="0 5" Text="0" TextChanged="Celsius_TextChanged" Name="Celsius"/>
+	```
+
+	2. 在 **MainWindow.axaml** 中，删除以 `<Button>` 开头的整行内容。现在已经不再需要这个按钮了。
+
+    ~~`<Button HorizontalAlignment="Center" Click="Button_OnClick">Calculate</Button>`~~
+
+    3. 在 **MainWindow.axaml.cs** 中，找到以 `private void` 开头的事件处理器定义。把事件名称从 `Button_OnClick` 改成你在 XAML 中设置的名称，例如 `Celsius_TextChanged`。
+
+    ```csharp
+    private void Celsius_TextChanged(object? sender, RoutedEventArgs e)
+    ```
+
+    4. 运行应用，确认当你在 Celsius 文本框中输入时，Fahrenheit 文本框中的值会实时变化。
+</details>
+
+<details>
+    <summary>可选：进一步改进</summary>
+
+    如果你希望 Celsius 文本框能够接受空值或单独的减号，可以像下面这样调整代码后置：
+
+    1. 在 **MainWindow.axaml.cs** 中，找到 `private void Celsius_TextChanged` 事件处理器。新增一个 `if` 条件，使输入为空或仅为减号时也被允许。
+
+    ```csharp
+    if (string.IsNullOrEmpty(Celsius.Text) || Celsius.Text == "-")
+        {
+            Fahrenheit.Text = "";
+        }
+    ```
+
+    2. 由于它现在变成了第二个条件，因此把原来的 `double` 解析逻辑改为以 `else if` 开头。
+
+    ```csharp
+    else if (double.TryParse(Celsius.Text, out double C))
+    ```
+
+    3. 现在你的事件处理器应该类似下面这样：
+
+    ```csharp
+    private void Celsius_TextChanged(object? sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(Celsius.Text) || Celsius.Text == "-")
+        {
+            Fahrenheit.Text = "";
+        }
+        else if (double.TryParse(Celsius.Text, out double C))
+        {
+            var F = C * (9d / 5d) + 32;
+            Fahrenheit.Text = F.ToString("0.0");
+        }
+        else
+        {
+            Celsius.Text = "0";
+            Fahrenheit.Text = "0";
+        }
+    }
+    ```
+
+    4. 运行应用，确认你现在可以把 Celsius 文本框中的内容全部删空，或者只输入一个减号，而不会让文本框自动重置为 0。在这种情况下，Fahrenheit 文本框会显示为空。这个改进可以让你更顺畅地输入负数。
+</details>
+
+恭喜！你已经完成了这个 Avalonia 入门教程！
+
+## 推荐继续阅读
+
+- 尝试下一个教程，创建一个[待办事项应用](https://github.com/AvaloniaUI/Avalonia.Samples/tree/main/src/Avalonia.Samples/CompleteApps/SimpleToDoList)
+- 学习 Avalonia 的[基础知识](/docs/fundamentals/avalonia-xaml)
+- 了解 [MVVM 设计模式](/docs/fundamentals/the-mvvm-pattern)
+- 探索 UI [样式](/docs/styling/styles)的使用方式
+- 查看完整的 [Avalonia 控件](/controls) 列表
+- 浏览 [API 文档](/api)
