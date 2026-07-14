@@ -20,6 +20,14 @@ const config: Config = {
   themes: ['@docusaurus/theme-mermaid'],
   organizationName: 'avaloniaui',
   projectName: 'avalonia',
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'zh-CN'],
+    localeConfigs: {
+      en: { label: 'English' },
+      'zh-CN': { label: '中文' },
+    },
+  },
   onBrokenLinks: 'warn',
   onBrokenAnchors: 'warn',
   onBrokenMarkdownLinks: 'warn',
@@ -409,6 +417,10 @@ gtag('consent', 'default', {
           label: 'Avalonia XPF',
           to: '/xpf',
           activeBasePath: '/xpf'
+        },
+        {
+          type: 'localeDropdown',
+          position: 'right',
         },
         {
           type: 'search',
