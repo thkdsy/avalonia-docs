@@ -76,8 +76,6 @@ npm install
 
 ```bash
 npx docusaurus start
-npx docusaurus start --locale zh-Hans
-npx docusaurus start --locale ru
 ```
 
 ### API Reference Generation
